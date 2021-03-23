@@ -1,0 +1,46 @@
+### valid cards
+POST http://localhost:8080/transfer
+Content-Type: application/json
+
+{
+  "cardFromNumber": "4111111111111111",
+  "cardToNumber": "6759948144967601",
+  "cardFromCVV": "343",
+  "cardFromValidTill": "03/21",
+  "amount": {
+    "currency": "RUR",
+    "value": "100000"
+  }
+}
+
+### bad cards
+POST http://localhost:8080/transfer
+Content-Type: application/json
+
+{
+  "cardFromNumber": "4111111111111111",
+  "cardToNumber": "4111111111111111",
+  "cardFromCVV": "aaa",
+  "cardFromValidTill": "12/20",
+  "amount": {
+    "currency": "BTC",
+    "value": "-100000"
+  }
+}
+
+### replace transaction id
+POST http://localhost:8080/confirmOperation
+Content-Type: application/json
+
+{
+  "operationId": "cd2e8cd1-57e4-4d4e-8c00-e0f294fa9f6b",
+  "code": "0000"
+}
+
+### replace transaction id
+POST http://localhost:8080/confirmOperation
+Content-Type: application/json
+
+{
+
+}

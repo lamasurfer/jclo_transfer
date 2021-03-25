@@ -27,9 +27,6 @@ public class TransactionService {
         this.repository = repository;
     }
 
-    // проверяет методом ниже что средств для перевода с комиссией достаточно
-    // возвращает optional-транзакцию или пустой optional
-    // для создания транзакции использует метод дальше
     public Optional<Transaction> getTransaction(Account accountFrom, Account accountTo, BigDecimal amount) {
         final BigDecimal totalAmount = calculateTotalAmount(amount);
         return isEnoughFunds(accountFrom, totalAmount)
@@ -37,11 +34,6 @@ public class TransactionService {
                 : Optional.empty();
     }
 
-    // создает, сохраняет в репозиторий и возвращает новую транзакцию
-    // operationId - randomUUID
-    // статус транзакции до подтверждения - TransactionStatus.REQUESTED, время - время при создании
-    // транзакция еще не подтверждена поэтому время подтверждения - LocalDateTime.MIN
-    // код null - его выставит VerificationService позже
     public Transaction createTransaction(Account accountFrom, Account accountTo, BigDecimal amount, BigDecimal totalAmount) {
         final Transaction transaction = new Transaction(
                 UUID.randomUUID().toString(),
@@ -58,9 +50,6 @@ public class TransactionService {
         return transaction;
     }
 
-    // проводит транзакцию, списывает средства с аккаунта отправителя
-    // если получатель - зарегистрированный аккаунт - добавит ему средства
-    // выставляет статус TransactionStatus.PROCESSED и время проведения вместо LocalDateTime.MIN
     public Transaction processTransaction(Transaction transaction) {
         final Account accountFrom = transaction.getAccountFrom();
         final Account accountTo = transaction.getAccountTo();
@@ -75,18 +64,15 @@ public class TransactionService {
         return transaction;
     }
 
-    // возвращает транзакцию по id если такая есть
     public Optional<Transaction> getById(String operationId) {
         return repository.getById(operationId);
     }
 
-    // рассчитывает полную стоимость перевода с комиссией
     public BigDecimal calculateTotalAmount(BigDecimal amount) {
         final BigDecimal multiplicand = TRANSFER_FEE.add(BigDecimal.ONE);
         return amount.multiply(multiplicand).setScale(SCALE, BANKERS);
     }
 
-    // проверяет, достаточно ли средств для перевода с учетом комиссии
     public boolean isEnoughFunds(Account accountFrom, BigDecimal totalAmount) {
         return accountFrom.getBalance().compareTo(totalAmount) >= 0;
     }

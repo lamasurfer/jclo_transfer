@@ -54,18 +54,31 @@ public class TransactionService {
         final Account accountFrom = transaction.getAccountFrom();
         final Account accountTo = transaction.getAccountTo();
         final BigDecimal totalAmount = transaction.getTotalAmount();
-        synchronized (accountFrom) {
-            synchronized (accountTo) {
-                if (accountTo.getAccountType() == AccountType.INTERNAL) {
-                    final BigDecimal amount = transaction.getAmount();
-                    accountTo.setBalance(accountTo.getBalance().add(amount));
+        final BigDecimal amount = transaction.getAmount();
+        final int compare = accountFrom.getCardNumber().compareTo(accountTo.getCardNumber());
+        if (compare > 0) {
+            synchronized (accountFrom) {
+                synchronized (accountTo) {
+                    transfer(accountFrom, accountTo, totalAmount, amount);
                 }
-                accountFrom.setBalance(accountFrom.getBalance().subtract(totalAmount));
+            }
+        } else if (compare < 0) {
+            synchronized (accountTo) {
+                synchronized (accountFrom) {
+                    transfer(accountFrom, accountTo, totalAmount, amount);
+                }
             }
         }
         transaction.setTransactionStatus(TransactionStatus.PROCESSED);
         transaction.setProcessedTime(LocalDateTime.now());
         return transaction;
+    }
+
+    public void transfer(Account accountFrom, Account accountTo, BigDecimal totalAmount, BigDecimal amount) {
+        if (accountTo.getAccountType() == AccountType.INTERNAL) {
+            accountTo.setBalance(accountTo.getBalance().add(amount));
+        }
+        accountFrom.setBalance(accountFrom.getBalance().subtract(totalAmount));
     }
 
     public Optional<Transaction> getById(String operationId) {

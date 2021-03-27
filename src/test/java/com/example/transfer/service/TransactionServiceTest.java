@@ -140,6 +140,54 @@ class TransactionServiceTest {
     }
 
     @Test
+    void transfer_internalAccounts_transfersMoneyProperly() {
+        final Account accountFrom = new Account(
+                "4111111111111111",
+                AccountType.INTERNAL, "343",
+                YearMonth.now(),
+                new BigDecimal("10000.00"));
+        final Account accountTo = new Account(
+                "5500000000000004",
+                AccountType.INTERNAL,
+                "543", YearMonth.now(),
+                BigDecimal.ZERO);
+        final BigDecimal amount = new BigDecimal("4000.00");
+        final BigDecimal totalAmount = new BigDecimal("4040.00");
+
+        transactionService.transfer(accountFrom, accountTo, totalAmount, amount);
+
+        final BigDecimal expectedFromBalance = new BigDecimal("5960.00");
+        assertEquals(expectedFromBalance, accountFrom.getBalance());
+
+        final BigDecimal expectedToBalance = new BigDecimal("4000.00");
+        assertEquals(expectedToBalance, accountTo.getBalance());
+    }
+
+    @Test
+    void transfer_externalAccounts_transfersMoneyProperly() {
+        final Account accountFrom = new Account(
+                "4111111111111111",
+                AccountType.INTERNAL, "343",
+                YearMonth.now(),
+                new BigDecimal("10000.00"));
+        final Account accountTo = new Account(
+                "5500000000000004",
+                AccountType.EXTERNAL,
+                null,
+                null,
+                null);
+        final BigDecimal amount = new BigDecimal("4000.00");
+        final BigDecimal totalAmount = new BigDecimal("4040.00");
+
+        transactionService.transfer(accountFrom, accountTo, totalAmount, amount);
+
+        final BigDecimal expectedFromBalance = new BigDecimal("5960.00");
+        assertEquals(expectedFromBalance, accountFrom.getBalance());
+
+        assertNull(accountTo.getBalance());
+    }
+
+    @Test
     void test_getById_ifPresent_returnsOptionalTransaction() {
         final String id = "1";
         final Transaction transaction = new Transaction();
